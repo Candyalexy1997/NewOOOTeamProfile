@@ -1,0 +1,29 @@
+{
+  "name": "newoooteamprofile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Candyalexy1997/NewOOOTeamProfile.git"
+  },
+  "author": "Candice",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Candyalexy1997/NewOOOTeamProfile/issues"
+  },
+  "homepage": "https://github.com/Candyalexy1997/NewOOOTeamProfile#readme",
+  "devDependencies": {
+    "jest": "^27.0.6"
+  },
+  "dependencies": {
+    "inquirer": "^8.1.1"
+  }
+}
