@@ -2,16 +2,17 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 
 const Engineer = require('./lib/Engineer');
-const Employee = require('./lib/Employee');
 const Manager = require('./lib/Manager');
 const Intern = require('./lib/Intern');
 
 const team = [];
 
 function initApp() {
-    createHtml();
+
     addTeam();
 }
+initApp()
+
 
 // Questions to Create Manager//
 function createManager() {
@@ -45,19 +46,27 @@ function createManager() {
             type: "input",
             name: "email",
             message: "Please enter Managers email address",
+
+        },
+
+        {
+            type: "input",
+            name: "office",
+            message: "Please enter Managers office number",
             validate: answer => {
-                let passAnswer = answer.match(/^\s+|\s+$/gm, '');
-                if (passAnswer) {
-                    return true;
+                if (answer === "") {
+                    console.log("Please enter the office number")
+                    return false;
                 }
-                console.log('Enter a valid email address');
-                return false
+                return true
+
+
             }
         },
 
 
     ]).then(answers => {
-        const manager = new Manager(answers.managersName, answers.manager);
+        const manager = new Manager(answers.managersId, answers.managersName, answers.email, answers.office);
         team.push(manager);
         addTeam();
     });
@@ -65,19 +74,25 @@ function createManager() {
 };
 
 function addTeam() {
+    console.log("calling add team")
     inquirer.prompt([{
         type: 'list',
         name: 'teamMemberRole',
         message: 'Would you like to add another member to your team?',
-        choices: ['Engineer', 'Intern', 'No more to add']
+        choices: ['Engineer', 'Intern', 'Manager', 'No more to add']
     }]).then(chosen => {
         switch (chosen.teamMemberRole) {
             case 'Engineer':
                 addEngineer();
                 break;
             case 'Intern':
+                addIntern();
+                break;
+            case 'Manager':
+                createManager();
                 break;
             case 'No more to add':
+                createHtml()
                 break;
 
         }
@@ -114,16 +129,8 @@ function addEngineer() {
         },
         {
             type: "input",
-            name: "managerId",
+            name: "email",
             message: "Please enter Engineers email address",
-            validate: answer => {
-                let passAnswer = answer.match(/^\s+|\s+$/gm, '');
-                if (passAnswer) {
-                    return true;
-                }
-                console.log('Enter a valid email address');
-                return false
-            }
         },
         {
             type: "input",
@@ -132,12 +139,13 @@ function addEngineer() {
             validate: answer => {
                 if (answer === " ") {
                     console.log('Please enter the Github username for your account')
+                    return false
                 }
-                return false
+                return true
             }
         }
     ]).then(answers => {
-        const engineer = new Engineer(answers.engineerName, answers.engineer)
+        const engineer = new Engineer(answers.engineerId, answers.engineerName, answers.email, answers.engineerGithub)
         team.push(engineer);
         addTeam();
     })
@@ -172,20 +180,12 @@ function addIntern() {
         },
         {
             type: "input",
-            name: "internId",
+            name: "email",
             message: "Please enter Intern email address",
-            validate: answer => {
-                let passAnswer = answer.match(/^\s+|\s+$/gm, '');
-                if (passAnswer) {
-                    return true;
-                }
-                console.log('Enter a valid email address');
-                return false
-            }
         },
 
     ]).then(answers => {
-        const intern = new Intern(answers.internName, answers.intern)
+        const intern = new Intern(answers.internId, answers.internName, answers.email)
         team.push(intern);
         addTeam();
     })
@@ -193,27 +193,51 @@ function addIntern() {
 
 // Create Function to Create Page in HTML //
 
-function createHtml() {
-    const html = `<!DOCTYPE html> <html lang="en">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <title>Team Profile</title>
-</head>
-<body>
-    <nav class="navbar navbar-dark bg-dark mb-5">
-        <span class="navbar-brand mb-0 h1 w-100 text-center">Team Profile</span>
-    </nav>
-    <div class="container">
-        <div class="row">`;
 
-    fs.writeFile("./dist/team.html"), html, function (err) {
+function createHtml() {
+    const newCardArr = []
+    team.forEach(element => {
+        const currTeamCard = `<div class="card">
+<div class="card-body">
+    <h5 class="card-title">${element.getName()}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">${element.getRole()}</h6>
+    <p class="card-text">${element.getId()}</p>
+    <p class="card-text">${element.getEmail()}</p>
+      <a href="#" class="card-link">${element.getRole() === "Engineer" ? element.getGithub(): " "}</a>
+</div>
+</div>`
+        newCardArr.push(currTeamCard)
+    })
+
+    const html = `<!DOCTYPE html>
+    <html lang="en">
+    
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    
+        <title>Employee Team Listing</title>
+    </head>
+    
+    <body>
+        <header>
+            <h1>Team Profile</h1>
+        </header>
+        <main class="container">
+        ${newCardArr.join(" ")}
+                </main>
+    </body>
+    
+    </html>`
+
+    fs.writeFile("./dist/team.html", html, function (err) {
         if (err) {
             console.log(err);
         }
-    };
+    });
     console.log("start");
 }
 
